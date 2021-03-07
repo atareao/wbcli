@@ -1,9 +1,11 @@
+extern crate clap;
 extern crate confy;
 extern crate dirs;
 extern crate log;
 extern crate serde_derive;
 extern crate syslog;
 
+use clap::{App, Arg, SubCommand};
 use confy::ConfyError;
 use log::{LevelFilter, SetLoggerError};
 use serde_derive::{Deserialize, Serialize};
@@ -43,5 +45,10 @@ fn main() {
     let mut settings: Settings = confy::load_path(&config_file).unwrap();
     settings.version = "0.1.0".into();
     confy::store_path(&config_file, settings);
-    println!("{}", &config_file.display());
+
+    let matches = App::new("wbcli")
+        .version("1.0")
+        .author("Lorenzo Carbonell <a.k.a. atareao>")
+        .about("Wallabag command line interface")
+        .get_matches();
 }
