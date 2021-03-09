@@ -1,25 +1,16 @@
 extern crate clap;
-extern crate confy;
-extern crate dirs;
 extern crate log;
-extern crate serde_derive;
+extern crate read_input;
 extern crate syslog;
 
+mod config;
+
 use clap::{App, Arg, SubCommand};
-use confy::ConfyError;
 use log::{LevelFilter, SetLoggerError};
-use serde_derive::{Deserialize, Serialize};
-use std::fs;
-use std::path::{Path, PathBuf};
+use read_input::prelude::*;
 use syslog::{BasicLogger, Facility, Formatter3164};
 
-#[derive(Default, Debug, Serialize, Deserialize)]
-struct Settings {
-    version: String,
-    url: String,
-    secret: String,
-    key: String,
-}
+use config::Config;
 
 fn main() {
     let formatter = Formatter3164 {
@@ -34,21 +25,54 @@ fn main() {
     log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
         .map(|()| log::set_max_level(LevelFilter::Debug));
 
-    let mut config_file = dirs::config_dir().unwrap();
-    config_file.push("wbcli");
-    match fs::create_dir_all(&config_file) {
-        Ok(resultado) => log::debug!("El directorio ha sido creado o existe {}", "ok"),
-        Err(e) => panic!("Adios"),
-    }
-    config_file.push("config.json");
-    println!("{}", &config_file.display());
-    let mut settings: Settings = confy::load_path(&config_file).unwrap();
-    settings.version = "0.1.0".into();
-    confy::store_path(&config_file, settings);
+    let config = Config::init();
+    let mut settings = config.read();
 
     let matches = App::new("wbcli")
         .version("1.0")
         .author("Lorenzo Carbonell <a.k.a. atareao>")
         .about("Wallabag command line interface")
+        .arg(
+            Arg::with_name("dapcion")
+                .short("d")
+                .long("dapcion")
+                .help("Configure wbcli")
+                .takes_value(false),
+        )
+        .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("configure")
+                .help("Configure wbcli")
+                .takes_value(false),
+        )
         .get_matches();
+    if settings.url == "" || settings.secret == "" || settings.key == "" {
+        if !matches.is_present("config") {
+            println!("Error: wbcli is not configured. You must configure before");
+        }
+    }
+    if matches.is_present("config") {
+        println!("Please following data for configure wbcli");
+        let default_url = String::from(&settings.url);
+        let msg_url = if default_url != "" {
+            format!("Url [{}]: ", &default_url)
+        } else {
+            String::from("Url: ")
+        };
+        let url: String = input()
+            .msg(msg_url)
+            .default(String::from(default_url))
+            .get();
+        let key: String = input().msg("Key: ").default(settings.key).get();
+        let secret: String = input().msg("Secret: ").default(settings.secret).get();
+        println!("{}", &url);
+        println!("{}", &key);
+        println!("{}", &secret);
+        settings.url = url;
+        settings.key = key;
+        settings.secret = secret;
+        println!("{:#?}", &settings);
+        config.save(&settings);
+    }
 }
