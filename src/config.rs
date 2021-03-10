@@ -7,7 +7,6 @@ use log::{info, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
 
-const APP: &str = "wbcli";
 const CONFIG_FILENAME: &str = "config.json";
 
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -16,6 +15,7 @@ pub struct Settings {
     pub url: String,
     pub secret: String,
     pub key: String,
+    pub debug: bool,
 }
 
 pub struct Config {
@@ -26,7 +26,7 @@ impl Config {
     pub fn init() -> Config {
         info!("Init {}", "init");
         let mut path = dirs::config_dir().unwrap();
-        path.push(String::from(APP));
+        path.push(env!("CARGO_PKG_NAME"));
         match fs::create_dir_all(&path) {
             Ok(resultado) => println!("Directorio creado {}", "ok"),
             Err(e) => panic!("Adios"),
