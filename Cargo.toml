@@ -1,6 +1,7 @@
 [package]
 name = "wbcli"
 version = "0.1.0"
+description = "A Wallabag command line interface"
 authors = ["Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>"]
 edition = "2018"
 
@@ -10,7 +11,7 @@ edition = "2018"
 confy = "0.4.0"
 dirs = "3.0"
 log = "0.4.14"
-syslog = "5.0.0"
+log4rs = "1.0.0"
 serde_derive = "^1.0"
 serde = "^1.0"
 clap = "2.33.3"

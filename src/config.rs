@@ -1,7 +1,9 @@
 extern crate confy;
 extern crate dirs;
+extern crate log;
 extern crate serde_derive;
 
+use log::{info, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
 
@@ -22,6 +24,7 @@ pub struct Config {
 
 impl Config {
     pub fn init() -> Config {
+        info!("Init {}", "init");
         let mut path = dirs::config_dir().unwrap();
         path.push(String::from(APP));
         match fs::create_dir_all(&path) {

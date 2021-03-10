@@ -1,37 +1,28 @@
 extern crate clap;
 extern crate log;
 extern crate read_input;
-extern crate syslog;
 
 mod config;
+mod logger;
 
 use clap::{App, Arg, SubCommand};
-use log::{LevelFilter, SetLoggerError};
+use log::{error, info, warn, LevelFilter};
 use read_input::prelude::*;
-use syslog::{BasicLogger, Facility, Formatter3164};
 
 use config::Config;
+use logger::configure_log;
 
 fn main() {
-    let formatter = Formatter3164 {
-        facility: Facility::LOG_USER,
-        hostname: None,
-        process: "wbcli".into(),
-        pid: 0,
-    };
-
-    let logger = syslog::unix(formatter).expect("could not connect to syslog");
-
-    log::set_boxed_logger(Box::new(BasicLogger::new(logger)))
-        .map(|()| log::set_max_level(LevelFilter::Debug));
+    configure_log();
+    info!("Test");
 
     let config = Config::init();
     let mut settings = config.read();
 
-    let matches = App::new("wbcli")
-        .version("1.0")
-        .author("Lorenzo Carbonell <a.k.a. atareao>")
-        .about("Wallabag command line interface")
+    let matches = App::new(env!("CARGO_PKG_NAME"))
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about(env!("CARGO_PKG_DESCRIPTION"))
         .arg(
             Arg::with_name("dapcion")
                 .short("d")
