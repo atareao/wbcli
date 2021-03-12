@@ -6,15 +6,16 @@ extern crate serde_derive;
 use log::{info, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
+use std::io::Result;
 
-const CONFIG_FILENAME: &str = "config.json";
+const CONFIG_FILENAME: &str = "config.toml";
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub version: String,
     pub url: String,
-    pub secret: String,
-    pub key: String,
+    pub access_token: String,
+    pub refresh_token: String,
     pub debug: bool,
 }
 
@@ -35,6 +36,10 @@ impl Config {
         Config {
             path: String::from(path.to_str().unwrap()),
         }
+    }
+
+    pub fn delete(&self) -> Result<()> {
+        fs::remove_file(&self.path)
     }
 
     pub fn read(&self) -> Settings {

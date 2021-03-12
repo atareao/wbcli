@@ -2,6 +2,7 @@ extern crate clap;
 extern crate log;
 extern crate read_input;
 
+mod client;
 mod config;
 mod logger;
 
@@ -9,6 +10,7 @@ use clap::{App, Arg, SubCommand};
 use log::{error, info, warn, LevelFilter};
 use read_input::prelude::*;
 
+use client::Client;
 use config::Config;
 use logger::configure_log;
 
@@ -23,10 +25,17 @@ fn main() {
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
         .arg(
-            Arg::with_name("dapcion")
+            Arg::with_name("clean")
                 .short("d")
-                .long("dapcion")
-                .help("Configure wbcli")
+                .long("clean configuration")
+                .help("remove and clean existing configuration")
+                .takes_value(false),
+        )
+        .arg(
+            Arg::with_name("test")
+                .short("t")
+                .long("test")
+                .help("Test connection with wbcli")
                 .takes_value(false),
         )
         .arg(
@@ -37,7 +46,11 @@ fn main() {
                 .takes_value(false),
         )
         .get_matches();
-    if settings.url == "" || settings.secret == "" || settings.key == "" {
+    if matches.is_present("clea") {
+        config.delete();
+        return;
+    }
+    if settings.url == "" || settings.access_token == "" || settings.refresh_token == "" {
         if !matches.is_present("config") {
             println!("Error: wbcli is not configured. You must configure before");
         }
@@ -53,31 +66,26 @@ fn main() {
             .msg(msg_url)
             .default(String::from(&settings.url))
             .get();
-        let msg_key = if &settings.key != "" {
-            format!("Key [{}]: ", &settings.key)
-        } else {
-            String::from("Key: ")
-        };
-        let key: String = input()
-            .msg(msg_key)
-            .default(String::from(&settings.key))
-            .get();
-        let msg_secret = if &settings.secret != "" {
-            format!("Secret[{}]: ", &settings.secret)
-        } else {
-            String::from("Secret: ")
-        };
-        let secret: String = input()
-            .msg(msg_secret)
-            .default(String::from(&settings.secret))
-            .get();
+        let client_id: String = input().msg("Client ID: ").get();
+        let client_secret: String = input().msg("Client secret: ").get();
+        let username: String = input().msg("User name: ").get();
+        let password: String = input().msg("Password: ").get();
+        let string_list = vec![
+            format!("\"{}\":\"{}\"", "grant_type", "password"),
+            format!("\"{}\":\"{}\"", "client_id", client_id),
+            format!("\"{}\":\"{}\"", "client_secret", client_secret),
+            format!("\"{}\":\"{}\"", "username", username),
+            format!("\"{}\":\"{}\"", "password", password),
+        ];
+        let joined = format!("{{{}}}", string_list.join(","));
+        println!("{}", joined);
+
         println!("{}", &url);
-        println!("{}", &key);
-        println!("{}", &secret);
-        settings.url = url;
-        settings.key = key;
-        settings.secret = secret;
         println!("{:#?}", &settings);
         config.save(&settings);
+        return;
+    }
+    if matches.is_present("test") {
+        let client = Client::new(&settings.url);
     }
 }
