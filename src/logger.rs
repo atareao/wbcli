@@ -8,7 +8,12 @@ use log4rs::config::{Appender, Config as LogConfig, Logger, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use log4rs::Handle;
 
-pub fn configure_log() -> Handle {
+pub fn configure_log(debug: bool) -> Handle {
+    let levelFilter = if debug {
+        LevelFilter::Info
+    } else {
+        LevelFilter::Off
+    };
     let requests = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new("{d} - {m}{n}")))
         .build("log/requests.log")
@@ -21,7 +26,7 @@ pub fn configure_log() -> Handle {
             Logger::builder()
                 .appender("requests")
                 .additive(false)
-                .build("app::requests", LevelFilter::Info),
+                .build("app::requests", levelFilter),
         )
         .build(
             Root::builder()

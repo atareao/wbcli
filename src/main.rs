@@ -13,11 +13,10 @@ use config::Config;
 use logger::configure_log;
 
 fn main() {
-    configure_log();
-    info!("Test");
-
     let config = Config::init();
     let mut settings = config.read();
+    configure_log(settings.debug);
+    info!("Test");
 
     let matches = App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
@@ -45,18 +44,33 @@ fn main() {
     }
     if matches.is_present("config") {
         println!("Please following data for configure wbcli");
-        let default_url = String::from(&settings.url);
-        let msg_url = if default_url != "" {
-            format!("Url [{}]: ", &default_url)
+        let msg_url = if &settings.url != "" {
+            format!("Url [{}]: ", &settings.url)
         } else {
             String::from("Url: ")
         };
         let url: String = input()
             .msg(msg_url)
-            .default(String::from(default_url))
+            .default(String::from(&settings.url))
             .get();
-        let key: String = input().msg("Key: ").default(settings.key).get();
-        let secret: String = input().msg("Secret: ").default(settings.secret).get();
+        let msg_key = if &settings.key != "" {
+            format!("Key [{}]: ", &settings.key)
+        } else {
+            String::from("Key: ")
+        };
+        let key: String = input()
+            .msg(msg_key)
+            .default(String::from(&settings.key))
+            .get();
+        let msg_secret = if &settings.secret != "" {
+            format!("Secret[{}]: ", &settings.secret)
+        } else {
+            String::from("Secret: ")
+        };
+        let secret: String = input()
+            .msg(msg_secret)
+            .default(String::from(&settings.secret))
+            .get();
         println!("{}", &url);
         println!("{}", &key);
         println!("{}", &secret);
