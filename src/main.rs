@@ -9,6 +9,7 @@ mod logger;
 use clap::{App, Arg, SubCommand};
 use log::{error, info, warn, LevelFilter};
 use read_input::prelude::*;
+use std::collections::HashMap;
 
 use client::Client;
 use config::Config;
@@ -70,15 +71,15 @@ fn main() {
         let client_secret: String = input().msg("Client secret: ").get();
         let username: String = input().msg("User name: ").get();
         let password: String = input().msg("Password: ").get();
-        let string_list = vec![
-            format!("\"{}\":\"{}\"", "grant_type", "password"),
-            format!("\"{}\":\"{}\"", "client_id", client_id),
-            format!("\"{}\":\"{}\"", "client_secret", client_secret),
-            format!("\"{}\":\"{}\"", "username", username),
-            format!("\"{}\":\"{}\"", "password", password),
-        ];
-        let joined = format!("{{{}}}", string_list.join(","));
-        println!("{}", joined);
+        let mut json = HashMap::new();
+        json.insert("grant_type", "password");
+        json.insert("client_id", &client_id);
+        json.insert("client_secret", &client_secret);
+        json.insert("username", &username);
+        json.insert("password", &password);
+        let client = Client::new(&url);
+        let response = client.post("oauth/v2/token", &json);
+        println!("{:#?}", &response);
 
         println!("{}", &url);
         println!("{:#?}", &settings);
