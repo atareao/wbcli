@@ -56,6 +56,13 @@ fn main() {
                 .takes_value(false),
         )
         .arg(
+            Arg::with_name("refresh")
+                .short("r")
+                .long("refresh")
+                .help("Refresh wallabag token")
+                .takes_value(false),
+        )
+        .arg(
             Arg::with_name("config")
                 .short("c")
                 .long("configure")
@@ -108,6 +115,25 @@ fn main() {
             return;
         }
     }
+    if matches.is_present("refresh") {
+        let mut json = HashMap::new();
+        json.insert("grant_type", "refresh_token");
+        json.insert("refresh_token", &settings.refresh_token);
+        json.insert("client_id", &settings.client_id);
+        json.insert("client_secret", &settings.client_secret);
+        let client = Client::new(&settings.url);
+        let response = client.post("oauth/v2/token", &json);
+        if &response.status() == &StatusCode::OK {
+            let token: Token = response.json().unwrap();
+            println!("{:#?}", &token);
+            settings.access_token = token.access_token;
+            settings.refresh_token = token.refresh_token;
+            println!("{:#?}", &settings);
+            config.save(&settings);
+            return;
+        }
+    }
+
     if matches.is_present("entries") {
         let client = Client::new_with_token(
             &settings.url,
