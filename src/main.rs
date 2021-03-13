@@ -9,9 +9,11 @@ mod logger;
 use clap::{App, Arg, SubCommand};
 use log::{error, info, warn, LevelFilter};
 use read_input::prelude::*;
+use reqwest::StatusCode;
 use std::collections::HashMap;
+use std::thread;
 
-use client::Client;
+use client::{Client, Token};
 use config::Config;
 use logger::configure_log;
 
@@ -47,8 +49,12 @@ fn main() {
                 .takes_value(false),
         )
         .get_matches();
-    if matches.is_present("clea") {
+    if matches.is_present("clear") {
         config.delete();
+        return;
+    }
+    if matches.is_present("test") {
+        println!("Test");
         return;
     }
     if settings.url == "" || settings.access_token == "" || settings.refresh_token == "" {
@@ -79,14 +85,15 @@ fn main() {
         json.insert("password", &password);
         let client = Client::new(&url);
         let response = client.post("oauth/v2/token", &json);
-        println!("{:#?}", &response);
-
-        println!("{}", &url);
-        println!("{:#?}", &settings);
-        config.save(&settings);
-        return;
-    }
-    if matches.is_present("test") {
-        let client = Client::new(&settings.url);
+        if &response.status() == &StatusCode::OK {
+            let token: Token = response.json().unwrap();
+            println!("{:#?}", &token);
+            settings.url = url;
+            settings.access_token = token.access_token;
+            settings.refresh_token = token.refresh_token;
+            println!("{:#?}", &settings);
+            config.save(&settings);
+            return;
+        }
     }
 }

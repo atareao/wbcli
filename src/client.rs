@@ -1,7 +1,6 @@
 extern crate reqwest;
 extern crate serde_derive;
 
-use reqwest::blocking;
 use reqwest::blocking::Client as EClient;
 use reqwest::blocking::Response;
 use reqwest::Error;
@@ -11,10 +10,10 @@ use std::collections::HashMap;
 use log::{info, warn};
 
 #[derive(Debug, Deserialize)]
-struct Token {
-    access_token: String,
+pub struct Token {
+    pub access_token: String,
     expires_in: i64,
-    refresh_token: String,
+    pub refresh_token: String,
     scope: Option<String>,
     token_type: String,
 }
@@ -29,15 +28,13 @@ impl Client {
         }
     }
 
-    pub fn get(&self, path: &str) -> String {
+    pub fn get(&self, path: &str) -> Response {
         let uri = format!("{}/{}", self.base_uri, path);
         let client = EClient::new();
-        let response = client.get(uri).send();
-        println!("{:#?}", response);
-        format!("{}", "nada")
+        client.get(uri).send().unwrap()
     }
 
-    pub fn post(&self, path: &str, json: &HashMap<&str, &str>) -> Result<Response, Error> {
+    pub fn post(&self, path: &str, json: &HashMap<&str, &str>) -> Response {
         let uri = format!("{}/{}", self.base_uri, path);
         let client = EClient::new();
         client
@@ -46,5 +43,6 @@ impl Client {
             .header("Accept", "Application/json")
             .json(json)
             .send()
+            .unwrap()
     }
 }
