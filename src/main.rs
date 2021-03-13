@@ -35,6 +35,13 @@ fn main() {
                 .takes_value(false),
         )
         .arg(
+            Arg::with_name("entries")
+                .short("e")
+                .long("entries")
+                .help("Retrieve all entries")
+                .takes_value(false),
+        )
+        .arg(
             Arg::with_name("test")
                 .short("t")
                 .long("test")
@@ -51,10 +58,6 @@ fn main() {
         .get_matches();
     if matches.is_present("clear") {
         config.delete();
-        return;
-    }
-    if matches.is_present("test") {
-        println!("Test");
         return;
     }
     if settings.url == "" || settings.access_token == "" || settings.refresh_token == "" {
@@ -94,6 +97,31 @@ fn main() {
             println!("{:#?}", &settings);
             config.save(&settings);
             return;
+        }
+    }
+    if matches.is_present("entries") {
+        let client = Client::new_with_token(
+            &settings.url,
+            &settings.access_token,
+            &settings.refresh_token,
+        );
+        let response = client.get("api/entries.txt");
+        if &response.status() == &StatusCode::OK {
+            let text = response.text().unwrap();
+            println!("{}", text);
+        }
+    }
+    if matches.is_present("test") {
+        let client = Client::new_with_token(
+            &settings.url,
+            &settings.access_token,
+            &settings.refresh_token,
+        );
+        let response = client.get("api/info");
+        println!("{:#?}", &response);
+        if &response.status() == &StatusCode::OK {
+            let text = response.text().unwrap();
+            println!("{}", text);
         }
     }
 }

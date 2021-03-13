@@ -19,19 +19,41 @@ pub struct Token {
 }
 pub struct Client {
     base_uri: String,
+    access_token: Option<String>,
+    refresh_token: Option<String>,
 }
 
 impl Client {
     pub fn new(base_uri: &str) -> Client {
         Client {
             base_uri: String::from(base_uri),
+            access_token: None,
+            refresh_token: None,
+        }
+    }
+    pub fn new_with_token(base_uri: &str, access_token: &str, refresh_token: &str) -> Client {
+        Client {
+            base_uri: String::from(base_uri),
+            access_token: Some(String::from(access_token)),
+            refresh_token: Some(String::from(refresh_token)),
         }
     }
 
     pub fn get(&self, path: &str) -> Response {
         let uri = format!("{}/{}", self.base_uri, path);
         let client = EClient::new();
-        client.get(uri).send().unwrap()
+        if self.access_token != None {
+            client
+                .get(uri)
+                .header(
+                    "Authorization",
+                    format!("Bearer {}", &self.access_token.as_ref().unwrap()),
+                )
+                .send()
+                .unwrap()
+        } else {
+            client.get(uri).send().unwrap()
+        }
     }
 
     pub fn post(&self, path: &str, json: &HashMap<&str, &str>) -> Response {
