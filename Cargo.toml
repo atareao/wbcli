@@ -4,6 +4,13 @@ version = "0.1.0"
 description = "A Wallabag command line interface"
 authors = ["Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://www.atareao.es"
+readme = "README.md"
+repository = "https://github.com/atareao/wbcli"
+keywords = ["cli", "wallabag"]
+categories = ["command-line-utilities"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
