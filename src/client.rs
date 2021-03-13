@@ -44,7 +44,7 @@ impl Client {
         let client = EClient::new();
         if self.access_token != None {
             client
-                .get(uri)
+                .get(&uri)
                 .header(
                     "Authorization",
                     format!("Bearer {}", &self.access_token.as_ref().unwrap()),
@@ -52,19 +52,33 @@ impl Client {
                 .send()
                 .unwrap()
         } else {
-            client.get(uri).send().unwrap()
+            client.get(&uri).send().unwrap()
         }
     }
 
     pub fn post(&self, path: &str, json: &HashMap<&str, &str>) -> Response {
         let uri = format!("{}/{}", self.base_uri, path);
         let client = EClient::new();
-        client
-            .post(uri)
-            .header("Content-Type", "Application/json")
-            .header("Accept", "Application/json")
-            .json(json)
-            .send()
-            .unwrap()
+        if self.access_token != None {
+            client
+                .post(uri)
+                .header("Content-Type", "Application/json")
+                .header("Accept", "Application/json")
+                .header(
+                    "Authorization",
+                    format!("Bearer {}", &self.access_token.as_ref().unwrap()),
+                )
+                .json(json)
+                .send()
+                .unwrap()
+        } else {
+            client
+                .post(uri)
+                .header("Content-Type", "Application/json")
+                .header("Accept", "Application/json")
+                .json(json)
+                .send()
+                .unwrap()
+        }
     }
 }

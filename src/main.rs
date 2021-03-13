@@ -42,6 +42,13 @@ fn main() {
                 .takes_value(false),
         )
         .arg(
+            Arg::with_name("add")
+                .short("a")
+                .long("Create an entry")
+                .help("Create an entry")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("test")
                 .short("t")
                 .long("test")
@@ -92,6 +99,8 @@ fn main() {
             let token: Token = response.json().unwrap();
             println!("{:#?}", &token);
             settings.url = url;
+            settings.client_id = client_id;
+            settings.client_secret = client_secret;
             settings.access_token = token.access_token;
             settings.refresh_token = token.refresh_token;
             println!("{:#?}", &settings);
@@ -105,7 +114,7 @@ fn main() {
             &settings.access_token,
             &settings.refresh_token,
         );
-        let response = client.get("api/entries.txt");
+        let response = client.get("api/entries");
         if &response.status() == &StatusCode::OK {
             let text = response.text().unwrap();
             println!("{}", text);
@@ -118,6 +127,22 @@ fn main() {
             &settings.refresh_token,
         );
         let response = client.get("api/info");
+        println!("{:#?}", &response);
+        if &response.status() == &StatusCode::OK {
+            let text = response.text().unwrap();
+            println!("{}", text);
+        }
+    }
+    if matches.is_present("add") {
+        let url = matches.value_of("add").unwrap();
+        let client = Client::new_with_token(
+            &settings.url,
+            &settings.access_token,
+            &settings.refresh_token,
+        );
+        let mut json = HashMap::new();
+        json.insert("url", url);
+        let response = client.post("api/entries", &json);
         println!("{:#?}", &response);
         if &response.status() == &StatusCode::OK {
             let text = response.text().unwrap();

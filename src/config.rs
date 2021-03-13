@@ -14,6 +14,8 @@ const CONFIG_FILENAME: &str = "config.toml";
 pub struct Settings {
     pub version: String,
     pub url: String,
+    pub client_id: String,
+    pub client_secret: String,
     pub access_token: String,
     pub refresh_token: String,
     pub debug: bool,
