@@ -1,6 +1,3 @@
-extern crate reqwest;
-extern crate serde_derive;
-
 use reqwest::blocking::Client as EClient;
 use reqwest::blocking::Response;
 use reqwest::Error;

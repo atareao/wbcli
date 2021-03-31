@@ -1,7 +1,3 @@
-extern crate clap;
-extern crate log;
-extern crate read_input;
-
 mod client;
 mod config;
 mod logger;

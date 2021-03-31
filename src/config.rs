@@ -1,8 +1,3 @@
-extern crate confy;
-extern crate dirs;
-extern crate log;
-extern crate serde_derive;
-
 use log::{info, warn};
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
